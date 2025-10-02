@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+        "package": "com.dishajk.taskoctopus",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -43,6 +44,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b443d42e-dff2-4c3f-8074-b6cf506fb62e"
+      }
     }
   }
 }
