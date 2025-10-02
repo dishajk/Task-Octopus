@@ -6,7 +6,7 @@ It allows you to create, edit, delete, and reorder tasks. Tasks are persistent a
 ---
 
 ## Download & Install APK (Android)
-1. Go to the **[Releases](https://github.com/dishajk/TaskOctopus/releases)** section of this repository.  
+1. Go to the **[Releases](https://github.com/dishajk/Task-Octopus/releases)** section of this repository.  
 2. Download the latest `TaskOctopus.apk` file.  
 3. Transfer it to your Android device or open directly on the device.  
 4. Allow installation from unknown sources if prompted.  
