@@ -12,8 +12,8 @@ export default function EditModal({ visible, initialValue, onSave, onClose }: Ed
   const [text, setText] = useState(initialValue);
 
   useEffect(() => {
-    setText(initialValue); // update text when modal opens for different task
-  }, [initialValue]);
+  if (visible) setText(initialValue); // reset text whenever modal opens
+  }, [initialValue, visible]);
 
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>

@@ -1,98 +1,130 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, TouchableOpacity, FlatList } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import EditModal from "../modal";
+import { Stack } from "expo-router";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const STORAGE_KEY = "@task_list";
 
-export default function HomeScreen() {
+export default function TaskLanding() {
+  const [tasks, setTasks] = useState<string[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [newTaskPosition, setNewTaskPosition] = useState<"top" | "bottom" | null>(null);
+
+  // Load tasks from storage on mount
+  useEffect(() => {
+    (async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) setTasks(JSON.parse(stored));
+      else setTasks(["Add a task", "Add a task", "Add a task"]);
+    })();
+  }, []);
+
+  // Save tasks to storage whenever tasks change
+  useEffect(() => {
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }, [tasks]);
+
+  const deleteTask = (index: number) => setTasks(tasks.filter((_, i) => i !== index));
+
+  const openEditModal = (index: number) => {
+    setEditIndex(index);
+    setNewTaskPosition(null);
+    setModalVisible(true);
+  };
+
+  const openAddModal = (position: "top" | "bottom") => {
+    setEditIndex(null);
+    setNewTaskPosition(position);
+    setModalVisible(true);
+  };
+
+  const saveTask = (text: string) => {
+    if (editIndex !== null) {
+      // Editing existing task
+      const updated = [...tasks];
+      updated[editIndex] = text;
+      setTasks(updated);
+    } else if (newTaskPosition) {
+      // Adding new task
+      const newTasks =
+        newTaskPosition === "top" ? [text, ...tasks] : [...tasks, text];
+      setTasks(newTasks);
+    }
+
+    // Reset modal state
+    setModalVisible(false);
+    setEditIndex(null);
+    setNewTaskPosition(null);
+  };
+
+  const postponeTo5 = (index: number) => {
+    if (tasks.length < 5) return postponeToLast(index);
+    const task = tasks[index];
+    const newTasks = tasks.filter((_, i) => i !== index);
+    newTasks.splice(4, 0, task);
+    setTasks(newTasks);
+  };
+
+  const postponeToLast = (index: number) =>
+    setTasks([...tasks.filter((_, i) => i !== index), tasks[index]]);
+
+  const renderTask = ({ item, index }: { item: string; index: number }) => (
+    <View style={styles.taskRow}>
+      <TouchableOpacity style={styles.button} onPress={() => deleteTask(index)}>
+        <Text>[done]</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => openEditModal(index)}>
+        <Text>[{item}]</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => postponeTo5(index)}>
+        <Text>[Later]</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => postponeToLast(index)}>
+        <Text>[Last]</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Stack.Screen options={{ title: "Octopus" }} />
+      <FlatList
+        data={tasks.slice(0, 3)} // show only first 3 tasks
+        renderItem={renderTask}
+        keyExtractor={(_, i) => i.toString()}
+      />
+      {tasks.length > 3 && (
+        <Text style={styles.moreText}>+{tasks.length - 3} more tasks...</Text>
+      )}
+      <View style={styles.taskRow}>
+        <TouchableOpacity style={styles.button} onPress={() => openAddModal("top")}>
+          <Text>[New Task (add to top)]</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => openAddModal("bottom")}>
+          <Text>[New Task (add to bottom)]</Text>
+        </TouchableOpacity>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <EditModal
+        visible={modalVisible}
+        initialValue={editIndex !== null ? tasks[editIndex] : ""}
+        onSave={saveTask}
+        onClose={() => {
+          setModalVisible(false);
+          setEditIndex(null);
+          setNewTaskPosition(null);
+        }}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  container: { flex: 1, backgroundColor: "#fff", paddingTop: 50, paddingHorizontal: 10 },
+  taskRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 10 },
+  button: { marginRight: 10, marginBottom: 5 },
+  moreText: { fontStyle: "italic", marginBottom: 10 },
 });
+
