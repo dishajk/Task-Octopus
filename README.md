@@ -14,6 +14,22 @@ It allows you to create, edit, delete, and reorder tasks. Tasks are persistent a
 
 > Note: TaskOctopus currently supports Android only.
 
+## Features
+1. Add new tasks to top or bottom of the list
+2. Delete tasks with [done]
+3. Postpone tasks to position 5 or end of the list
+4. Click a task to edit its name in a modal
+5. Shows 3 tasks at a time on landing screen
+6. Task list persists across app restarts
+
+## Contributing
+
+1. Fork the repository
+2. Create a branch for your feature: `git checkout -b feature/my-feature`
+3. Make changes and commit: `git commit -m "Add new feature"`
+4. Push to your branch: `git push origin feature/my-feature`
+5. Open a Pull Request
+
 ---
 ---
 
